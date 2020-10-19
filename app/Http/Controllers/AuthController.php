@@ -19,8 +19,9 @@ class AuthController extends ApiController
         if ($validator->fails()) {
             return $this->validationError($validator->errors(), 'Validation Failed');
         }
-
-        $user = User::create($validator->getData());
+        $data = $validator->getData();
+        $data['password'] = bcrypt($data['password']);
+        $user = User::create($data);
 
         return response()->json([
             'message' => 'User created successfully',
