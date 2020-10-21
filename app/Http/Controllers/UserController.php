@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\OrderHistory;
+use App\Product;
 
 class UserController extends ApiController
 {
@@ -45,8 +46,23 @@ class UserController extends ApiController
 
     public function orders()
     {
-        $user = auth()->user();
+        $user = auth('sanctum')->user();
 
-        return $user->orders()->paginate(30);
+        if (!$user) {
+            return $this->unauthorized();
+        }
+
+        $query = $user->orders()
+                ->with('user:id,name,email')
+                ->paginate(30);
+
+        return $query->setCollection(
+            $query->getCollection()->transform(function ($model) {
+                $model->products = Product::find($model->product_ids, ['id', 'name', 'price', 'image']);
+                unset($model->product_ids);
+
+                return $model;
+            })
+           );
     }
 }

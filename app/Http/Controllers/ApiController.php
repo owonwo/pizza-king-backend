@@ -24,6 +24,11 @@ class ApiController extends Controller
         return Validator::make(request()->all(), $rules, $messages, $customAttributes);
     }
 
+    public function unauthorized()
+    {
+        return response()->json(['message' => 'Unauthorized.'], 401);
+    }
+
     public function fallback()
     {
         return response()->json(['message' => 'Invalid URL.'], 404);

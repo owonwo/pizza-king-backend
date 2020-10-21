@@ -19,6 +19,7 @@ class CreateOrderHistory extends Migration
             $table->string('phone');
             $table->json('product_ids');
             $table->integer('zipcode', false);
+            $table->enum('status', ['PENDING', 'DELIVERED', 'CANCELLED'])->defaults('PENDING');
             $table->mediumText('delivery_address');
             $table->timestamps();
         });

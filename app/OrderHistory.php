@@ -12,6 +12,10 @@ class OrderHistory extends Model
         'zipcode', 'delivery_address', 'user_id',
     ];
 
+    protected $casts = [
+       'product_ids' => 'object',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
