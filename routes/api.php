@@ -24,6 +24,8 @@ Route::post('/register', 'AuthController@register');
 
 Route::get('/products', 'ProductController@index');
 
+Route::post('/place-order', 'UserController@placeOrder');
+
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/me', 'UserController@getAuthUser');
     Route::get('/orders', 'UserController@orders');
