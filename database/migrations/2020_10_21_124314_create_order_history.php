@@ -11,16 +11,16 @@ class CreateOrderHistory extends Migration
      */
     public function up()
     {
-        Schema::create('order_histories', function (Blueprint $table) {
+        Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->string('name');
             $table->string('email');
             $table->string('phone');
-            $table->json('product_ids');
             $table->integer('zipcode', false);
             $table->enum('status', ['PENDING', 'DELIVERED', 'CANCELLED'])->defaults('PENDING');
             $table->mediumText('delivery_address');
+            $table->string('currency');
             $table->timestamps();
         });
     }
@@ -30,6 +30,6 @@ class CreateOrderHistory extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('order_histories');
+        Schema::dropIfExists('orders');
     }
 }

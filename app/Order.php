@@ -4,20 +4,22 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class OrderHistory extends Model
+class Order extends Model
 {
     // Fillable
     protected $fillable = [
         'email', 'name', 'phone', 'product_ids',
         'zipcode', 'delivery_address', 'user_id',
-    ];
-
-    protected $casts = [
-       'product_ids' => 'object',
+        'currency',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function products()
+    {
+        return $this->hasMany(OrderProducts::class, 'order_id');
     }
 }

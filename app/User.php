@@ -40,6 +40,6 @@ class User extends Authenticatable
 
     public function orders()
     {
-        return $this->hasMany(OrderHistory::class, 'user_id');
+        return $this->hasMany(Order::class, 'user_id');
     }
 }

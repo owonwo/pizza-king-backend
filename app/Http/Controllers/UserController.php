@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\OrderHistory;
-use App\Product;
+use App\Order;
+use App\OrderProducts;
+use Illuminate\Validation\Rule;
 
 class UserController extends ApiController
 {
@@ -18,6 +19,7 @@ class UserController extends ApiController
     public function placeOrder()
     {
         $validation = $this->validator([
+            'currency' => ['required', Rule::in(['USD', 'EUR'])],
             'name' => 'required|string',
             'email' => 'required|email',
             'phone' => 'required|min:7',
@@ -30,16 +32,23 @@ class UserController extends ApiController
             return $this->validationError($validation->errors(), 'Required fields are missing');
         }
 
-        $user = auth('sanctum')->user();
         $data = $validation->getData();
+        $user = auth('sanctum')->user();
+        $data['user_id'] = $user ? $user->id : null;
+        unset($data['product_ids']);
 
-        $order = OrderHistory::create(array_merge(
-            $data,
-            [
-                'user_id' => $user ? $user->id : null,
-                'product_ids' => json_encode($data['product_ids']),
-            ]
-        ));
+        $order = Order::create($data);
+
+        // add products to the order
+        foreach ($validation->getData()['product_ids'] as $key => $value) {
+            [$product_id, $quantity] = is_array($value) ? $value : json_decode($value);
+
+            OrderProducts::create([
+                'quantity' => $quantity,
+                'order_id' => $order->id,
+                'product_id' => $product_id,
+            ]);
+        }
 
         return response()->json(['message' => 'Order Placed!']);
     }
@@ -52,17 +61,10 @@ class UserController extends ApiController
             return $this->unauthorized();
         }
 
-        $query = $user->orders()
+        return $user->orders()
                 ->with('user:id,name,email')
+                ->with('products.product')
+                ->latest()
                 ->paginate(30);
-
-        return $query->setCollection(
-            $query->getCollection()->transform(function ($model) {
-                $model->products = Product::find($model->product_ids, ['id', 'name', 'price', 'image']);
-                unset($model->product_ids);
-
-                return $model;
-            })
-           );
     }
 }
