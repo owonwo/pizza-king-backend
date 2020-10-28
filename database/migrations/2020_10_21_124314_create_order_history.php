@@ -17,6 +17,7 @@ class CreateOrderHistory extends Migration
             $table->string('name');
             $table->string('email');
             $table->string('phone');
+            $table->double('amount')->defaults(0);
             $table->integer('zipcode', false);
             $table->enum('status', ['PENDING', 'DELIVERED', 'CANCELLED'])->defaults('PENDING');
             $table->mediumText('delivery_address');

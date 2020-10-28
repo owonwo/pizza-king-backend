@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Order;
 use App\OrderProducts;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class UserController extends ApiController
@@ -37,17 +38,31 @@ class UserController extends ApiController
         $data['user_id'] = $user ? $user->id : null;
         unset($data['product_ids']);
 
-        $order = Order::create($data);
+        try {
+            DB::beginTransaction();
+            $order = Order::create(array_merge($data, ['amount' => 0]));
+            // add products to the order
+            foreach ($validation->getData()['product_ids'] as $key => $value) {
+                $parsedValue = is_array($value) ? $value : json_decode($value);
 
-        // add products to the order
-        foreach ($validation->getData()['product_ids'] as $key => $value) {
-            [$product_id, $quantity] = is_array($value) ? $value : json_decode($value);
+                if (2 === sizeof($parsedValue)) {
+                    [$product_id, $quantity] = $parsedValue;
 
-            OrderProducts::create([
-                'quantity' => $quantity,
-                'order_id' => $order->id,
-                'product_id' => $product_id,
-            ]);
+                    OrderProducts::create([
+                        'quantity' => $quantity,
+                        'order_id' => $order->id,
+                        'product_id' => $product_id,
+                    ]);
+                }
+            }
+
+            $order->amount = $order->getProductsSum();
+            $order->save();
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            return $this->validationError($validation->errors(), 'Something went wrong we could process your order.');
         }
 
         return response()->json(['message' => 'Order Placed!']);

@@ -10,7 +10,7 @@ class Order extends Model
     protected $fillable = [
         'email', 'name', 'phone', 'product_ids',
         'zipcode', 'delivery_address', 'user_id',
-        'currency',
+        'currency', 'amount',
     ];
 
     public function user()
@@ -21,5 +21,13 @@ class Order extends Model
     public function products()
     {
         return $this->hasMany(OrderProducts::class, 'order_id');
+    }
+
+    public function getProductsSum()
+    {
+        $products_query = Product::whereIn('id', $this->products()->get('product_id')
+            ->pluck(['product_id']));
+
+        return $products_query->sum('price');
     }
 }
