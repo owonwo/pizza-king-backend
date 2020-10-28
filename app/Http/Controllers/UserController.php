@@ -24,7 +24,7 @@ class UserController extends ApiController
             'email' => 'required|email',
             'phone' => 'required|min:7',
             'product_ids' => 'required|array',
-            'zipcode' => 'required|min:6|max:6',
+            'zipcode' => 'required|min:4',
             'delivery_address' => 'required|string|min:8',
         ]);
 
